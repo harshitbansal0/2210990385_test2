@@ -9,10 +9,23 @@ import UIKit
 
 class RecipeDetailViewController: UIViewController {
 
+    @IBOutlet weak var instructionsTextView: UITextView!
+    @IBOutlet weak var ingredientsTextView: UITextView!
+    @IBOutlet weak var timeLabel: UILabel!
+    @IBOutlet weak var CaloriesLabel: UILabel!
+    @IBOutlet weak var nameLabel: UILabel!
+    @IBOutlet weak var thumbnailView: UIImageView!
+    var recipe: Recipe?
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
+        if let recipe = recipe {
+            thumbnailView.image = UIImage(named: recipe.imageName)
+            nameLabel.text = recipe.title
+            CaloriesLabel.text = "\(recipe.calories)"
+            timeLabel.text = recipe.time
+            ingredientsTextView.text = recipe.ingredients
+            instructionsTextView.text = recipe.instructions
+        }
     }
     
 

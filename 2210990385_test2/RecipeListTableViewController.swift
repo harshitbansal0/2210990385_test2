@@ -18,29 +18,71 @@ class RecipeListTableViewController: UITableViewController {
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem
     }
+    var groupedRecipes: [String: [Recipe]] = {
+            // Create grouped dictionary
+            Dictionary(grouping: recipes, by: { $0.section })
+        }()
+        
+        // Section titles
+        var sectionTitles: [String] = {
+            // Extract and sort section titles
+            Array(Set(recipes.map { $0.section })).sorted()
+        }()
 
     // MARK: - Table view data source
 
     override func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
-        return 0
+        return sectionTitles.count
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
-        return 0
+        let sectionTitle = sectionTitles[section]
+        return groupedRecipes[sectionTitle]?.count ?? 0
     }
 
-    /*
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "reuseIdentifier", for: indexPath)
-
-        // Configure the cell...
-
-        return cell
+        let cell = tableView.dequeueReusableCell(withIdentifier: "RecipeCell", for: indexPath) as! RecipeCellTableViewCell
+                let sectionTitle = sectionTitles[indexPath.section]
+                
+                if let recipesInSection = groupedRecipes[sectionTitle] {
+                    let recipe = recipesInSection[indexPath.row]
+                    cell.nameLabel.text = "\(recipe.title) \(recipe.calories) cal - \(recipe.time)"
+                    cell.thumbnailView.image = UIImage(named: recipe.imageName)
+                }
+                
+                return cell
     }
-    */
 
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "ShowRecipeDetail" {
+                    if let detailVC = segue.destination as? RecipeDetailViewController,
+                       let indexPath = tableView.indexPathForSelectedRow {
+                        let sectionTitle = sectionTitles[indexPath.section]
+                        if let recipesInSection = groupedRecipes[sectionTitle], let recipe = recipesInSection.first {
+                            detailVC.recipe = recipe
+                        }
+                    }
+                }
+        if segue.identifier == "AddRecipeSegue",
+           let addRecipeVC = segue.destination as? AddRecipeViewController {
+            addRecipeVC.onSave = { [weak self] newRecipe in
+                recipes.append(newRecipe)
+                self?.tableView.reloadData()
+            }
+        }
+    }
+
+    
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+            // Return the section title
+            return sectionTitles[section]
+        }
+    private func updateRecipeData() {
+            groupedRecipes = Dictionary(grouping: recipes, by: { $0.section })
+            sectionTitles = groupedRecipes.keys.sorted()
+        }
     /*
     // Override to support conditional editing of the table view.
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
